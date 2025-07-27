@@ -1,0 +1,54 @@
+<!-- home.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Select Station</title>
+  <style>
+    body {
+      background: #ffecd2;
+      background: linear-gradient(to right, #fcb69f, #ffecd2);
+      font-family: Arial;
+      text-align: center;
+      padding: 50px;
+    }
+    select, button {
+      padding: 12px;
+      margin-top: 20px;
+      width: 250px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+  <h1>📍 Select Your Nearby Station</h1>
+  <select id="stationSelect">
+    <option value="" disabled selected>Select Station</option>
+    <option value="Station A" data-distance="3" data-petrol="102" data-diesel="92">Station A (3 km)</option>
+    <option value="Station B" data-distance="5" data-petrol="101" data-diesel="91">Station B (5 km)</option>
+    <option value="Station C" data-distance="2" data-petrol="100" data-diesel="90">Station C (2 km)</option>
+  </select><br>
+  <button onclick="goToOrder()">🚗 Order Fuel</button>
+
+  <script>
+    function goToOrder() {
+      const select = document.getElementById("stationSelect");
+      const selected = select.options[select.selectedIndex];
+
+      if (!selected.value) {
+        alert("Please select a station!");
+        return;
+      }
+
+      const details = {
+        name: selected.value,
+        distance: selected.getAttribute("data-distance"),
+        petrol: selected.getAttribute("data-petrol"),
+        diesel: selected.getAttribute("data-diesel")
+      };
+      localStorage.setItem("stationDetails", JSON.stringify(details));
+      window.location.href = "order.html";
+    }
+  </script>
+</body>
+</html>

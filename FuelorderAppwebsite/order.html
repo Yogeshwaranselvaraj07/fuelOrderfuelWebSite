@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Fuel Order</title>
+  <style>
+    body {
+      background: linear-gradient(to right, #141E30, #243B55);
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+    }
+
+    .order-box {
+      background: #1e1e1e;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 0 20px rgba(0,0,0,0.6);
+      width: 90%;
+      max-width: 420px;
+    }
+
+    h2 {
+      text-align: center;
+      color: #00d9ff;
+    }
+
+    label {
+      margin-top: 10px;
+      display: block;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: none;
+      border-radius: 10px;
+    }
+
+    .btn {
+      background-color: #00d9ff;
+      color: black;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      margin-top: 15px;
+      width: 100%;
+    }
+
+    .result, .success-message {
+      margin-top: 20px;
+      padding: 10px;
+      border-radius: 8px;
+    }
+
+    .result {
+      background: #2e2e2e;
+    }
+
+    .success-message {
+      background: #28a745;
+      display: none;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+<div class="order-box">
+  <h2>Fuel Order</h2>
+
+  <label for="fuelType">Fuel Type:</label>
+  <select id="fuelType">
+    <option value="petrol">Petrol - ₹104</option>
+    <option value="diesel">Diesel - ₹94</option>
+  </select>
+
+  <label for="litres">Litres:</label>
+  <input type="number" id="litres" placeholder="Enter litres" />
+
+  <button class="btn" onclick="calculateOrder()">Calculate Total</button>
+
+  <div class="result" id="resultBox"></div>
+
+  <button class="btn" onclick="placeOrder()">Order Now</button>
+  <div class="success-message" id="successMessage">✅ Order placed successfully!</div>
+</div>
+
+<script>
+  let userLat, userLon;
+
+  // 1. Get user location
+  navigator.geolocation.getCurrentPosition(
+    position => {
+      userLat = position.coords.latitude;
+      userLon = position.coords.longitude;
+      console.log(`User location: ${userLat}, ${userLon}`);
+    },
+    error => {
+      alert("Location access denied! Distance cannot be calculated.");
+    }
+  );
+
+  // 2. Example station location (You can fetch from DB later)
+  const stationLat = 12.9260; // sample
+  const stationLon = 80.1171;
+
+  function haversine(lat1, lon1, lat2, lon2) {
+    const R = 6371; // Earth's radius in km
+    const dLat = deg2rad(lat2 - lat1);
+    const dLon = deg2rad(lon2 - lon1);
+    const a = 
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  }
+
+  function deg2rad(deg) {
+    return deg * (Math.PI / 180);
+  }
+
+  function calculateOrder() {
+    const fuelType = document.getElementById("fuelType").value;
+    const litres = parseFloat(document.getElementById("litres").value);
+    const resultBox = document.getElementById("resultBox");
+
+    if (isNaN(litres) || litres <= 0) {
+      resultBox.innerHTML = "<span style='color:red'>⚠️ Enter valid litres</span>";
+      return;
+    }
+
+    if (!userLat || !userLon) {
+      resultBox.innerHTML = "<span style='color:red'>⚠️ Location not available</span>";
+      return;
+    }
+
+    // 3. Calculate distance
+    const distance = haversine(userLat, userLon, stationLat, stationLon).toFixed(2);
+    const deliveryCharge = (distance * 5).toFixed(2);
+    const pricePerLitre = fuelType === "petrol" ? 104 : 94;
+    const fuelCost = (litres * pricePerLitre).toFixed(2);
+    const total = (parseFloat(fuelCost) + parseFloat(deliveryCharge)).toFixed(2);
+
+    // 4. Show result
+    resultBox.innerHTML = `
+      📍 Distance to Station: ${distance} km<br>
+      ⛽ Fuel Cost: ₹${fuelCost}<br>
+      🚚 Delivery: ₹${deliveryCharge}<br>
+      💰 <strong>Total: ₹${total}</strong>
+    `;
+  }
+
+  function placeOrder() {
+    const resultBox = document.getElementById("resultBox").innerHTML;
+    const success = document.getElementById("successMessage");
+
+    if (resultBox.trim() === "") {
+      alert("Calculate the order first!");
+      return;
+    }
+
+    success.style.display = "block";
+  }
+</script>
+
+</body>
+</html>
